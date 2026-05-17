@@ -1,12 +1,8 @@
 package httpapi
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
-
-	"go-rest-homework/internal/store"
 )
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
@@ -16,31 +12,12 @@ func writeJSON(w http.ResponseWriter, status int, payload any) {
 }
 
 func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, map[string]string{"error": message})
+	writeJSON(w, status, map[string]string{"detail": message})
 }
 
 func writeMethodNotAllowed(w http.ResponseWriter, methods ...string) {
 	w.Header().Set("Allow", joinMethods(methods))
-	writeError(w, http.StatusMethodNotAllowed, "method not allowed")
-}
-
-func writeStoreError(w http.ResponseWriter, err error) {
-	if errors.Is(err, store.ErrTodoNotFound) {
-		writeError(w, http.StatusNotFound, "todo not found")
-		return
-	}
-	writeContextError(w, err)
-}
-
-func writeContextError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, context.Canceled):
-		writeError(w, http.StatusRequestTimeout, "request canceled")
-	case errors.Is(err, context.DeadlineExceeded):
-		writeError(w, http.StatusGatewayTimeout, "request deadline exceeded")
-	default:
-		writeError(w, http.StatusInternalServerError, "internal server error")
-	}
+	writeError(w, http.StatusMethodNotAllowed, "Method Not Allowed")
 }
 
 func joinMethods(methods []string) string {
